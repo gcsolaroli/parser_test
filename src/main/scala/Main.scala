@@ -24,16 +24,18 @@ object SchemaSyntax:
 
   val numericValue: Syntax[String, Char, Char, Schema.NumericValue] = Syntax.string("integer", Schema.NumericValue())
 
-  val listOfValues: Syntax[String, Char, Char, Schema.ListOfValues] = (item <~ Syntax.char('*')).transform(
+  lazy val listOfValues: Syntax[String, Char, Char, Schema.ListOfValues] = (item <~ Syntax.char('*')).transform(
       itemSchema => Schema.ListOfValues(itemSchema),
       items => items.schema
   )
 
-  val item: Syntax[String, Char, Char, Schema]    =   numericValue        .widen[Schema]
-                                                  <>  textValue           .widen[Schema]
-                                                  <>  listOfValues.widen[Schema]
+  lazy val item: Syntax[String, Char, Char, Schema] =   numericValue  .widen[Schema]
+                                                    <>  textValue     .widen[Schema]
 
-  val root: Syntax[String, Char, Char, Schema] = Syntax.char('=') ~> whitespaces ~> item
+  lazy val items: Syntax[String, Char, Char, Schema]  =   listOfValues  .widen[Schema]
+                                                      <>  item
+
+  lazy val root: Syntax[String, Char, Char, Schema] = Syntax.char('=') ~> whitespaces ~> items
 
   lazy val schema: Syntax[String, Char, Char, Schema] = root
 
